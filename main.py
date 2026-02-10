@@ -1,48 +1,111 @@
-from tkinter import *
-from tkinter.filedialog import *
+class Account:
+    def __init__(self, acc_id, balance, name):
+        self._acc_id = acc_id
+        self._balance = balance
+        self._name = name
 
-# 텍스트창을 아무것도 안 쓰인 상태로!
-def new_file():
-    text_area.delete(1.0,END)
+    def get_acc_id(self):
+        return self._acc_id
 
-# 현재 쓰여진 내용을 파일로 저장하기
-def save_file():
-    f = asksaveasfile(mode = "w", defaultextension=".txt",filetypes=[('Text files', '.txt')])
-    text_save = str(text_area.get(1.0, END))
-    f.write(text_save)
-    f.close()
+    def deposit(self, money):
+        self._balance += money
 
-# 누가 만들었는지 보여주는 창을 별도로 띄우기!
-def maker():
-    help_view = Toplevel(window) # 따로 메시지창 띄우기용
-    help_view.geometry("300x50")
-    help_view.title("만든이")
-    lb = Label(help_view, text = "강윤호가 만든 메모장입니다.")
-    lb.pack()
+    def withdraw(self, money):
+        if self._balance < money:
+            return 0
+        self._balance -= money
+        return money
+
+    def show_info(self):
+        print(f"계좌ID: {self._acc_id}")
+        print(f"이름: {self._name}")
+        print(f"잔액: {self._balance}\n")
+
+acc_arr = []
+
+def show_menu():
+    print("-----Menu-----")
+    print("1. 계좌개설")
+    print("2. 입금")
+    print("3. 출금")
+    print("4. 계좌번호 전체 출력")
+    print("5. 프로그램 종료")
+
+def make_account():
+    print("[계좌개설]")
+    try:
+        acc_id = int(input("계좌ID:(숫자로 입력) "))
+        name = input("이름: ")
+        balance = int(input("입금액: "))
+        print()
+    except ValueError:
+        print("\n입력 형식이 올바르지 않습니다.\n")
+        return
+
+    acc_arr.append(Account(acc_id, balance, name))
+
+def deposit_money():
+    print("[입  금]")
+    try:
+        acc_id = int(input("계좌ID: "))
+        money = int(input("입금액: "))
+    except ValueError:
+        print("\n입력 형식이 올바르지 않습니다.\n")
+        return
+
+    for acc in acc_arr:
+        if acc.get_acc_id() == acc_id:
+            acc.deposit(money)
+            print("입금완료\n")
+            return
+    print("유효하지 않은 ID 입니다.\n")
+
+def withdraw_money():
+    print("[출  금]")
+    try:
+        acc_id = int(input("계좌ID: "))
+        money = int(input("출금액: "))
+    except ValueError:
+        print("\n입력 형식이 올바르지 않습니다.\n")
+        return
+
+    for acc in acc_arr:
+        if acc.get_acc_id() == acc_id:
+            if acc.withdraw(money) == 0:
+                print("잔액부족\n")
+                return
+            print("출금완료\n")
+            return
+    print("유효하지 않은 ID 입니다\n")
+
+def show_all_acc_info():
+    for acc in acc_arr:
+        acc.show_info()
+
+def main():
+    MAKE, DEPOSIT, WITHDRAW, INQUIRE, EXIT = 1, 2, 3, 4, 5
+    while True:
+        show_menu()
+        try:
+            choice = int(input("선택(1~5까지의 숫자만 입력) : "))
+        except ValueError:
+            print("\n잘못된 선택\n")
+            continue
+        print()
+
+        if choice == MAKE:
+            make_account()
+        elif choice == DEPOSIT:
+            deposit_money()
+        elif choice == WITHDRAW:
+            withdraw_money()
+        elif choice == INQUIRE:
+            show_all_acc_info()
+        elif choice == EXIT:
+            break
+        else:
+            print("잘못된 선택\n")
 
 
-window = Tk()
-window.title("Notepad")
-window.geometry("400x400")
-window.resizable(False, False)
-
-menu = Menu(window)
-menu_1 = Menu(menu, tearoff=0)
-menu_1.add_command(label="새파일", command=new_file)
-menu_1.add_command(label="저장", command=save_file)
-menu_1.add_separator()
-menu_1.add_command(label="종료", command=window.destroy)
-menu.add_cascade(label="파일", menu=menu_1)
-
-menu_2 = Menu(menu, tearoff=0)
-menu_2.add_command(label="만든이", command=maker)
-menu.add_cascade(label="만든이", menu=menu_2)
-
-text_area = Text(window)
-window.grid_rowconfigure(0, weight=1)
-window.grid_columnconfigure(0, weight=1)
-text_area.grid(sticky = N + E + S + W)
-
-window.config(menu=menu)
-
-window.mainloop()
+if __name__ == "__main__":
+    main()
